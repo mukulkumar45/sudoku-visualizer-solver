@@ -24,16 +24,37 @@ async function startSolving() {
     }
   }
 
+  if (!isInitialBoardValid()) {
+    alert("❌ Invalid Sudoku: conflicting numbers detected.");
+    return;
+  }
+
   if (!await solveSudoku(0, 0)) {
-    alert("No solution exists!");
+    alert("❌ No solution exists!");
   } else {
-    // Update the grid with solved values
     for (let r = 0; r < 9; r++) {
       for (let c = 0; c < 9; c++) {
         document.getElementById(`cell-${r}-${c}`).value = board[r][c];
       }
     }
   }
+}
+
+function isInitialBoardValid() {
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      const num = board[row][col];
+      if (num !== 0) {
+        board[row][col] = 0; // Temporarily clear to validate
+        if (!isSafe(row, col, num)) {
+          board[row][col] = num; // Restore
+          return false;
+        }
+        board[row][col] = num; // Restore
+      }
+    }
+  }
+  return true;
 }
 
 async function solveSudoku(row, col) {
@@ -45,13 +66,13 @@ async function solveSudoku(row, col) {
     if (isSafe(row, col, num)) {
       board[row][col] = num;
       updateCell(row, col, num);
-      await sleep(1);  // Speed up animation
+      await sleep(1);  // Faster animation
 
       if (await solveSudoku(row, col + 1)) return true;
 
       board[row][col] = 0;
       updateCell(row, col, '');
-      await sleep(1);  // Speed up animation
+      await sleep(1);
     }
   }
   return false;
